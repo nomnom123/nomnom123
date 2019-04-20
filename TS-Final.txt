@@ -1,0 +1,343 @@
+library(fpp)
+par(mfrow=c(2,2))
+plot(hsales,xlab="Year",ylab="Monthly Housing sales (millions")  ##strongly seasonal and cyclic
+plot(ustreas,xlab="Day",ylab="US treausry bill contracts")  ## only trend
+plot(elec,xlab="Year",ylab="Australian Monthly Electricity Production")  ## Both Trend and Seasonality
+plot(diff(dj),xlab="Day",ylab="Daily Change in Dow Jones Index")  ##No trend, No Seasonality and No Cyclic
+
+
+
+library(tseries)
+decompose(elecequip)
+plot(decompose(elecequip))
+
+
+
+##Moving Average (m=5, K=2)
+data(elecsales)
+ma(elecsales, order=5)
+
+plot(elecsales,main="Residential electricity sales",ylab="GWh", xlab="Year")
+lines(ma(elecsales,5),col="red")
+
+
+##Moving Average of Moving Average
+data(ausbeer)
+beer2<-window(ausbeer,start=1992)
+ma4<-ma(beer2,order=4,centre=FALSE)
+ma2_4<-ma(beer2,order=4,centre=TRUE)
+plot(elecequip, ylab="New Orde index", col= "gray", main ="Electrical equipment manufacturing (euro area)")
+lines(ma(elecequip, order =12),col="red")
+
+
+##Simple Exponential Smoothing
+
+oildata<-window(oil, start=1996, end=2007)
+fit1<-ses(oildata,alfa=0.2, initial="simple",h=3)
+fit2<-ses(oildata,alfa=0.6, initial="simple",h=3)
+fit3<-ses(oildata,h=3)
+summary(fit1)
+summary(fit2)
+summary(fit3)
+
+plot(fit1,plot.conf=FALSE, ylab="oil (millions of tonnes)",xlab="year",main="",fcol="white",type="o")
+lines(fitted(fit1),col="blue",type="o")
+
+
+
+##Holt's Liner trend method
+air<-window(ausair, start=1990, end=2004)
+fit1<-holt(air,alpha=0.8,beta=0.2,initial="simple",h=5)
+plot(fit1,type="o",ylab="Air passengers in Australia(millions",xlab="Year",fcol="white",plot.conf=FALSE)
+lines(fitted(fit1),col="blue")
+
+##Exponential trend Method
+fit2<-holt(air,alpha=0.8,beta=0.2,initial="simple",exponential=TRUE,h=5)
+summary(fit2)
+
+
+##Damped Additive trend methods
+fit3<-holt(air,alpha=0.8,beta=0.2,damped=TRUE, initial="simple",h=5)
+
+
+##Damped Multiplicative trend methods
+fit4<-holt(air,alpha=0.8,beta=0.2,damped=TRUE,exponential=TRUE,h=5)
+
+
+##ALL the methods
+livestocks2<-window(livestock,start=1970,end=2000)  ##data set
+fit1<-ses(livestocks2)   ##Simple Exponential Smoothing
+fit2<-holt(livestocks2)   ##Holt's Linear trend method
+fit3<-holt(livestocks2,exponential=TRUE)   ##Exponential trend Method
+fit4<-holt(livestocks2,damped=TRUE)        ##Damped Additive trend methods
+fit5<-holt(livestocks2,exponential=TRUE,damped=TRUE) ##Damped Multiplicative trend methods
+
+##results of first model
+fit1$model
+accuracy(fit1)    ##Training set
+accuracy(fit1,livestock)    ##test set
+
+##results of second model
+
+fit2$model
+accuracy(fit2)    ##Training set
+accuracy(fit2,livestock)    ##test set
+
+##results of third model
+
+fit3$model
+accuracy(fit3)    ##Training set
+accuracy(fit3,livestock)    ##test set
+
+##results of fourth model
+
+fit4$model
+
+accuracy(fit4)    ##Training set
+
+accuracy(fit4,livestock)    ##test set
+
+##results of fourth model
+
+fit5$model
+
+accuracy(fit5)    ##Training set
+
+accuracy(fit5,livestock)    ##test set
+
+
+
+plot(fit3,type="o",ylab="Livestock,sheep in Asia (millions",flw=1,plot.conf=FALSE)
+
+lines(window(livestock,start=2001),type="o")
+
+lines(fit1$mean,col=2)
+
+lines(fit2$mean,col=3)
+
+lines(fit4$mean,col=5)
+
+lines(fit5$mean,col=6)
+
+legend("topleft",lty=1,pch=1,col=1:6,c("Data","SES","Holt's","Exponential","Additive Damped","Multiplicative Damped"))
+
+
+
+##Holt winters Additive Method
+
+aust<-window(austourists, start=2005)
+
+fit1<-hw(aust,seasonal="additive")
+
+fit2<-hw(aust,seasonal="multiplicative")
+
+plot(fit2,ylab="International visitor night in Australia (million)",plot.conf=FALSE,type="o",fcol="white",xlab="year")
+
+lines(fitted(fit1),col="red",lty=2)
+
+lines(fitted(fit2),col="green",lty=2)
+
+lines(fit1$mean,type="o",col="red")
+
+lines(fit2$mean,type="o",col="green")
+
+legend("topleft",lty=1,pch=1,col=1:3,c("data","Holt Winters Additive","Holt Winters Multiplicative"))
+
+
+
+
+
+
+
+
+
+
+
+
+##MA(1)
+  
+set.seed(600)
+
+MA1=arima.sim(n=600,list(ma=c(0.9)),innov=rnorm(600,0,1)) ##MA(2)
+
+MA<-arima(MA1,order=c(0,0,1))
+
+MA
+
+plot.ts(MA1)
+
+mean(MA1)
+
+var(MA1)
+
+cov(MA1,lag(MA1,1))
+
+cor(MA1,lag(MA1,1))
+
+acf(MA1)
+
+pacf(MA1)
+
+
+
+
+
+##AR(1)
+
+set.seed(600)
+
+AR1=arima.sim(n=100,list(ar=0.9),innov=rnorm(100))  ##AR(1)
+
+AR1
+
+plot(AR1)
+
+mean(AR1)
+
+var(AR1)
+
+plot.ts(AR1)
+
+acf(AR1)
+
+pacf(AR1)
+
+layout(matrix(c(1,1,2,3),2,2,byrow=TRUE))
+
+plot.ts(AR1);acf(AR1,main="Auto-cor");pacf(AR1,main="Part-cor")
+
+##let there is two dependent AR(2)
+
+AR2=arima.sim(n=100,list(ar=c(0.9,-0.2)),innov=rnorm(100)) ##AR(2)
+
+plot.ts(AR2)
+
+acf(AR2)
+
+pacf(AR2)
+
+layout(matrix(c(1,1,2,3),2,2,byrow=TRUE))
+
+plot.ts(AR2);acf(AR2,main="Auto-cor");pacf(AR2,main="Part-cor")
+
+##let there is three dependent AR(3)
+
+AR3=arima.sim(n=600,list(ar=c(0.9,-0.2,-0.4)),innov=rnorm(600)) ##AR(3)
+
+plot.ts(AR)
+
+acf(AR3)
+
+pacf(AR3)
+
+lay=par(no.readonly=TRUE)
+
+layout(matrix(c(1,1,2,3),2,2,byrow=TRUE))
+
+plot.ts(AR3);acf(AR3,main="Auto-cor");pacf(AR3,main="Part-cor")
+
+par(lay)
+
+##MA(2)
+
+MA1=arima.sim(n=600,list(ma=c(0.9,-0.2)),innov=rnorm(600)) ##MA(2)
+
+plot.ts(MA1)
+
+acf(MA1)
+
+pacf(MA1)
+
+lay=par(no.readonly=TRUE)
+
+layout(matrix(c(1,1,2,3),2,2,byrow=TRUE))
+
+plot.ts(MA1);acf(MA1,main="Auto-cor");pacf(MA1,main="Part-cor")
+
+par(lay)
+
+##ARIMA(ar(2),ma(2))
+
+ARMA=arima.sim(n=600,list(ar=c(0.8,-0.4),ma=c(0.3,-0.2)),innov=rnorm(600))
+
+plot.ts(ARMA)
+
+acf(ARMA)
+
+pacf(ARMA)
+
+lay=par(no.readonly=TRUE)
+
+layout(matrix(c(1,1,2,3),2,2,byrow=TRUE))
+
+plot.ts(ARMA);acf(ARMA,main="Auto-cor");pacf(ARMA,main="Part-cor")
+
+par(lay)
+
+
+
+
+##AR(1)
+## c(0.8,0.3) for AR(2)
+set.seed(100)
+x<-arima.sim(n=1000,list(ar=c(0.2)),innov = rnorm(1000,0,1)) ##arima simulation innov=error
+plot.ts(x)
+
+install.packages("tseries")
+library(tseries)
+
+adf.test(x)
+
+## if p-value les than 0.05 then reject
+a<-diff(x,1) #differentiate series of order1 diff if not stationary
+
+adf.test(a)
+
+acf(x) ## acf lag starts with 0
+pacf(x) ## pacf lag starts with 1
+
+##Go=ives AR1 MA1
+
+fit1<-arima(x,order=c(1,0,1))
+fit2<-arima(x,order=c(0,0,1))
+fit3<-arima(x,order=c(1,0,0))
+fit1
+fit2
+fit3
+
+## Series of MA5
+
+set.seed(100)
+x2<-arima.sim(n=1000,list(ma=c(0.2,0.3,0.5,0.8,0.9)),innov = rnorm(1000,0,1))
+plot.ts(x2)
+
+adf.test(x2)
+
+acf(x2)
+pacf(x2) 
+
+fit1<-arima(x2,order=c(3,0,5))
+fit2<-arima(x2,order=c(0,0,5))
+fit3<-arima(x2,order=c(3,0,0))
+fit1
+fit2
+fit3
+
+## Simulate AR1 MA1
+
+set.seed(100)
+x3<-arima.sim(n=1000,list(ar=c(0.2),ma=c(0.3)),innov = rnorm(1000,0,1))
+plot.ts(x3)
+
+adf.test(x3)
+
+acf(x2)
+pacf(x3)
+
+fit1<-arima(x2,order=c(5,0,2))
+fit2<-arima(x2,order=c(0,0,2))
+fit3<-arima(x2,order=c(5,0,0))
+fit1
+fit2
+fit3
+
