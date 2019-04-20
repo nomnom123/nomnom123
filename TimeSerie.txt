@@ -1,0 +1,145 @@
+library(fpp)
+par(mfrow=c(2,2))
+plot(hsales,xlab="Year",ylab="Monthly Housing sales (millions")  ##strongly seasonal and cyclic
+plot(ustreas,xlab="Day",ylab="US treausry bill contracts")  ## only trend
+plot(elec,xlab="Year",ylab="Australian Monthly Electricity Production")  ## Both Trend and Seasonality
+plot(diff(dj),xlab="Day",ylab="Daily Change in Dow Jones Index")  ##No trend, No Seasonality and No Cyclic
+
+
+
+library(tseries)
+decompose(elecequip)
+plot(decompose(elecequip))
+
+
+
+##Moving Average (m=5, K=2)
+data(elecsales)
+ma(elecsales, order=5)
+
+plot(elecsales,main="Residential electricity sales",ylab="GWh", xlab="Year")
+lines(ma(elecsales,5),col="red")
+
+
+##Moving Average of Moving Average
+data(ausbeer)
+beer2<-window(ausbeer,start=1992)
+ma4<-ma(beer2,order=4,centre=FALSE)
+ma2_4<-ma(beer2,order=4,centre=TRUE)
+plot(elecequip, ylab="New Orde index", col= "gray", main ="Electrical equipment manufacturing (euro area)")
+lines(ma(elecequip, order =12),col="red")
+
+
+##Simple Exponential Smoothing
+
+oildata<-window(oil, start=1996, end=2007)
+fit1<-ses(oildata,alfa=0.2, initial="simple",h=3)
+fit2<-ses(oildata,alfa=0.6, initial="simple",h=3)
+fit3<-ses(oildata,h=3)
+summary(fit1)
+summary(fit2)
+summary(fit3)
+
+plot(fit1,plot.conf=FALSE, ylab="oil (millions of tonnes)",xlab="year",main="",fcol="white",type="o")
+lines(fitted(fit1),col="blue",type="o")
+
+
+
+##Holt's Liner trend method
+air<-window(ausair, start=1990, end=2004)
+fit1<-holt(air,alpha=0.8,beta=0.2,initial="simple",h=5)
+plot(fit1,type="o",ylab="Air passengers in Australia(millions",xlab="Year",fcol="white",plot.conf=FALSE)
+lines(fitted(fit1),col="blue")
+
+##Exponential trend Method
+fit2<-holt(air,alpha=0.8,beta=0.2,initial="simple",exponential=TRUE,h=5)
+summary(fit2)
+
+
+##Damped Additive trend methods
+fit3<-holt(air,alpha=0.8,beta=0.2,damped=TRUE, initial="simple",h=5)
+
+
+##Damped Multiplicative trend methods
+fit4<-holt(air,alpha=0.8,beta=0.2,damped=TRUE,exponential=TRUE,h=5)
+
+
+##ALL the methods
+livestocks2<-window(livestock,start=1970,end=2000)  ##data set
+fit1<-ses(livestocks2)   ##Simple Exponential Smoothing
+fit2<-holt(livestocks2)   ##Holt's Linear trend method
+fit3<-holt(livestocks2,exponential=TRUE)   ##Exponential trend Method
+fit4<-holt(livestocks2,damped=TRUE)        ##Damped Additive trend methods
+fit5<-holt(livestocks2,exponential=TRUE,damped=TRUE) ##Damped Multiplicative trend methods
+
+##results of first model
+fit1$model
+accuracy(fit1)    ##Training set
+accuracy(fit1,livestock)    ##test set
+
+##results of second model
+
+fit2$model
+accuracy(fit2)    ##Training set
+accuracy(fit2,livestock)    ##test set
+
+##results of third model
+
+fit3$model
+accuracy(fit3)    ##Training set
+accuracy(fit3,livestock)    ##test set
+
+##results of fourth model
+
+fit4$model
+
+accuracy(fit4)    ##Training set
+
+accuracy(fit4,livestock)    ##test set
+
+##results of fourth model
+
+fit5$model
+
+accuracy(fit5)    ##Training set
+
+accuracy(fit5,livestock)    ##test set
+
+
+
+plot(fit3,type="o",ylab="Livestock,sheep in Asia (millions",flw=1,plot.conf=FALSE)
+
+lines(window(livestock,start=2001),type="o")
+
+lines(fit1$mean,col=2)
+
+lines(fit2$mean,col=3)
+
+lines(fit4$mean,col=5)
+
+lines(fit5$mean,col=6)
+
+legend("topleft",lty=1,pch=1,col=1:6,c("Data","SES","Holt's","Exponential","Additive Damped","Multiplicative Damped"))
+
+
+
+##Holt winters Additive Method
+
+aust<-window(austourists, start=2005)
+
+fit1<-hw(aust,seasonal="additive")
+
+fit2<-hw(aust,seasonal="multiplicative")
+
+plot(fit2,ylab="International visitor night in Australia (million)",plot.conf=FALSE,type="o",fcol="white",xlab="year")
+
+lines(fitted(fit1),col="red",lty=2)
+
+lines(fitted(fit2),col="green",lty=2)
+
+lines(fit1$mean,type="o",col="red")
+
+lines(fit2$mean,type="o",col="green")
+
+legend("topleft",lty=1,pch=1,col=1:3,c("data","Holt Winters Additive","Holt Winters Multiplicative"))
+
